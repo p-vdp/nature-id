@@ -58,7 +58,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -m MODEL, --model MODEL
+  -m, MODEL, --model MODEL
                         Model to load to identify lifeforms.
   -a, --all_common_names
                         Show all common names and not just one.
@@ -66,8 +66,10 @@ optional arguments:
                         Compute and display only label probabilities, do not propagate probabilities across the hierachy.
   -s, --scientific_names_only
                         Only use scientific names, do not load common names.
-  -r RESULT_SIZE, --result_size RESULT_SIZE
+  -r, RESULT_SIZE, --result_size RESULT_SIZE
                         Number of labels and their probabilities to report in results.
+  -o, --output-file
+                        Output results to a JSON file.
 ```
 
 ### Option -m MODEL, --model MODEL
