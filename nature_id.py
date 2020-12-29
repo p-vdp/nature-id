@@ -32,9 +32,8 @@ all_common_names = False  # show only one or all common names
 result_sz = 5  # result size (for label_probabilities_only)
 
 
-# This class is used by class Taxonomy.
 class Taxon:
-
+    """This class is used by class Taxonomy."""
     def __init__(self, taxon_id):
         self.taxon_id = taxon_id  # for internal lookups and iNat API calls
         self.rank_level = None  # taxonomic rank, e.g. species, genus, family
@@ -48,24 +47,23 @@ class Taxon:
     def add_child(self, child_taxon):
         self.children.append(child_taxon)
 
-    # get taxonomic rank as a string
     def get_rank(self):
+        """Get taxonomic rank as a string"""
         if self.taxon_id < 0:  # pseudo-kingdom?
             assert self.rank_level == inat_taxonomy.KINGDOM_RANK_LEVEL
             return ''
         return inat_taxonomy.get_rank_name(self.rank_level)
 
-    # get the name to display; customize here to show common names differently
     def get_name(self):
+        """Get the name to display; customize here to show common names differently"""
         if self.common_name:
             return f'{self.common_name} ({self.name})'
         else:
             return self.name
 
 
-# This taxonomy is represented in terms of instances of class Taxon.
 class Taxonomy:
-
+    """This taxonomy is represented in terms of instances of class Taxon."""
     def __init__(self):
         # The taxonomy file may contain multiple trees, one for each kingdom.
         # In order to have a single tree for prediction, we add a node for
@@ -144,8 +142,8 @@ class Taxonomy:
                 self.annotate_labels_with_common_names()
         del self.id2taxon  # not needed anymore
 
-    # augment labels with common names
     def annotate_labels_with_common_names(self):
+        """Augment labels with common names"""
         for taxon in self.id2taxon.values():
             for leaf_class_id in taxon.leaf_class_ids:
                 self.idx2label[leaf_class_id] = taxon.get_name()
@@ -158,8 +156,8 @@ class Taxonomy:
         for child in taxon.children:
             self.write_row(writer, child, taxon.taxon_id)
 
-    # write taxonomy file
     def write_taxonomic_tree(self, filename):
+        """Write taxonomy file"""
         try:
             with open(filename, 'w', newline='', encoding='latin-1') as csvfile:
                 writer = csv.writer(csvfile)
@@ -175,10 +173,12 @@ class Taxonomy:
             except Exception:
                 pass
 
-    # Called after loading label file for Google's AIY Vision Kit.
-    # Adds all the labels' direct and indirect ancestors to compute
-    # the taxonomic tree.
     def compute_taxonomic_tree(self):
+        """
+        Called after loading label file for Google's AIY Vision Kit.
+        Adds all the labels' direct and indirect ancestors to compute
+        the taxonomic tree.
+        """
         global label_probabilities_only
         if not inat_taxonomy.load_inat_taxonomy():
             label_probabilities_only = True
@@ -240,8 +240,8 @@ class Taxonomy:
               f"{time.time() - start_time:.1f} secs: {len(self.id2taxon) - 1:,} "
               f"taxa including {len(self.idx2label):,} leaf taxa.")
 
-    # propagate probabilities to taxon and all below
     def assign_scores(self, taxon, probabilities):
+        """Propagate probabilities to taxon and all below"""
         taxon.score = 0.0
         for leaf_class_id in taxon.leaf_class_ids:
             taxon.score += probabilities[leaf_class_id]
@@ -249,13 +249,14 @@ class Taxonomy:
             self.assign_scores(child, probabilities)
             taxon.score += child.score
 
-    # Returns list of 5-tuples (probability, taxon_id, taxonomic rank,
-    # scientific name, common name) ordered by taxonomic rank from kingdom
-    # down to e.g. species.
-    # Returns pairs (probability, scientific name) if label_probabilities_only
-    # is set.
-    def prediction(self, probabilities):
 
+    def prediction(self, probabilities):
+        """
+        Returns list of 5-tuples (probability, taxon_id, taxonomic rank,
+        scientific name, common name) ordered by taxonomic rank from kingdom
+        down to e.g. species.
+        Returns pairs (probability, scientific name) if label_probabilities_only is set.
+        """
         if label_probabilities_only:
             # return list of pairs (probability, scientific name)
             total = np.sum(probabilities)
@@ -291,12 +292,8 @@ class Taxonomy:
         return path
 
 
-#
-# Offline image classification.
-#
-
 class OfflineClassifier:
-
+    """Offline image classification."""
     def __init__(self, filenames):
         # Load TFLite model and allocate tensors.
         self.mInterpreter = tflite.Interpreter(model_path=filenames[0])
