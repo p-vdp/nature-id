@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image, ImageOps
 import csv, sys, os, time
 import inat_taxonomy
+import json
 
 try:
     # try importing TensorFlow Lite first
@@ -25,30 +26,31 @@ INSTALL_DIR = inat_taxonomy.INSTALL_DIR
 CLASSIFIER_DIRECTORY = os.path.join(INSTALL_DIR, 'classifiers')
 
 # These flags can be modified with command-line options.
-scientific_names_only    = False # only scientific names or also common names
-label_probabilities_only = False # probabilities for labels or hierarchical
-all_common_names         = False # show only one or all common names
-result_sz                = 5     # result size (for label_probabilities_only)
+scientific_names_only = False  # only scientific names or also common names
+label_probabilities_only = False  # probabilities for labels or hierarchical
+all_common_names = False  # show only one or all common names
+result_sz = 5  # result size (for label_probabilities_only)
+
 
 # This class is used by class Taxonomy.
 class Taxon:
 
     def __init__(self, taxon_id):
         self.taxon_id = taxon_id  # for internal lookups and iNat API calls
-        self.rank_level = None    # taxonomic rank, e.g. species, genus, family
-        self.name = None          # scientific name
-        self.common_name = None   # common name or None
-        self.children = []        # list of child taxa
+        self.rank_level = None  # taxonomic rank, e.g. species, genus, family
+        self.name = None  # scientific name
+        self.common_name = None  # common name or None
+        self.children = []  # list of child taxa
         self.leaf_class_ids = []  # list of indices into probabilities; there
-                                  # can be more than one when we use old models
-                                  # whose taxa have since been lumped together
+        # can be more than one when we use old models
+        # whose taxa have since been lumped together
 
     def add_child(self, child_taxon):
         self.children.append(child_taxon)
 
     # get taxonomic rank as a string
     def get_rank(self):
-        if self.taxon_id < 0: # pseudo-kingdom?
+        if self.taxon_id < 0:  # pseudo-kingdom?
             assert self.rank_level == inat_taxonomy.KINGDOM_RANK_LEVEL
             return ''
         return inat_taxonomy.get_rank_name(self.rank_level)
@@ -71,12 +73,12 @@ class Taxonomy:
         self.root = Taxon(inat_taxonomy.ROOT_TAXON_ID)
         self.root.name = inat_taxonomy.ROOT_NAME
         self.root.rank_level = inat_taxonomy.ROOT_RANK_LEVEL
-        self.id2taxon = { self.root.taxon_id : self.root }
+        self.id2taxon = {self.root.taxon_id: self.root}
         self.idx2label = {}
 
     def reset(self):
         self.root.children = []
-        self.id2taxon = { self.root.taxon_id : self.root }
+        self.id2taxon = {self.root.taxon_id: self.root}
         self.idx2label = {}
 
     def taxonomy_available(self):
@@ -88,13 +90,13 @@ class Taxonomy:
         with open(filename, newline='', encoding='latin-1') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                if 'id' in row: # this is a label file
+                if 'id' in row:  # this is a label file
                     self.idx2label[int(row['id'])] = row['name']
                     continue
 
                 taxon_id = int(row['taxon_id'])
                 if taxon_id in self.id2taxon:
-                    taxon = self.id2taxon[taxon_id] # inserted earlier as parent
+                    taxon = self.id2taxon[taxon_id]  # inserted earlier as parent
                 else:
                     self.id2taxon[taxon_id] = taxon = Taxon(taxon_id)
 
@@ -140,7 +142,7 @@ class Taxonomy:
             inat_taxonomy.annotate_common_names(self.id2taxon, all_common_names)
             if label_probabilities_only:
                 self.annotate_labels_with_common_names()
-        del self.id2taxon # not needed anymore
+        del self.id2taxon  # not needed anymore
 
     # augment labels with common names
     def annotate_labels_with_common_names(self):
@@ -183,10 +185,10 @@ class Taxonomy:
             return
 
         start_time = time.time()
-        IDX_ID         = inat_taxonomy.IDX_ID
-        IDX_NAME       = inat_taxonomy.IDX_NAME
+        IDX_ID = inat_taxonomy.IDX_ID
+        IDX_NAME = inat_taxonomy.IDX_NAME
         IDX_RANK_LEVEL = inat_taxonomy.IDX_RANK_LEVEL
-        new_id = 0   # id's we add on the fly for pseudo-kingdoms
+        new_id = 0  # id's we add on the fly for pseudo-kingdoms
 
         for idx, name in self.idx2label.items():
             inat_taxa = inat_taxonomy.lookup_id(name)
@@ -235,7 +237,7 @@ class Taxonomy:
             taxon.leaf_class_ids.append(idx)
 
         print("Computed taxonomic tree from labels in "
-              f"{time.time() - start_time:.1f} secs: {len(self.id2taxon)-1:,} "
+              f"{time.time() - start_time:.1f} secs: {len(self.id2taxon) - 1:,} "
               f"taxa including {len(self.idx2label):,} leaf taxa.")
 
     # propagate probabilities to taxon and all below
@@ -287,6 +289,7 @@ class Taxonomy:
             taxon = best_child
 
         return path
+
 
 #
 # Offline image classification.
@@ -348,7 +351,7 @@ class OfflineClassifier:
             # scale image
             img = img.resize(model_size)
 
-        #img.show()
+        # img.show()
 
         # pixels are in range 0 ... 255, turn into numpy array
         input_data = np.array([np.array(img, self.mInput_details[0]['dtype'])])
@@ -370,15 +373,15 @@ class OfflineClassifier:
               f"{time.time() - start_time:.1f} secs.")
         return path
 
-# Returns a dictionary that maps available classifiers to a pair of filenames.
-def get_installed_models():
 
+def get_installed_models():
+    """Returns a dictionary that maps available classifiers to a pair of filenames."""
     if not os.path.isdir(CLASSIFIER_DIRECTORY):
         print("Cannot load classifiers, directory "
               f"'{CLASSIFIER_DIRECTORY}' does not exist.")
         sys.exit(1)
 
-    choices = [ 'birds', 'insects', 'plants']
+    choices = ['birds', 'insects', 'plants']
     models = {}
 
     for filename in os.listdir(CLASSIFIER_DIRECTORY):
@@ -394,8 +397,8 @@ def get_installed_models():
             if model:
                 filename = os.path.join(CLASSIFIER_DIRECTORY, filename)
                 if model in models:
-                    if not models[model][1] or models[model][1].\
-                       endswith('labelmap.csv'):
+                    if not models[model][1] or models[model][1]. \
+                            endswith('labelmap.csv'):
                         models[model] = (models[model][0], filename)
                 else:
                     models[model] = (None, filename)
@@ -414,7 +417,7 @@ def get_installed_models():
                 else:
                     models[model] = (filename, None)
 
-    delete_elements = [] # postponed deletion, cannot delete during iteration
+    delete_elements = []  # postponed deletion, cannot delete during iteration
     for name, files in models.items():
         if not files[0] or not files[1]:
             tf_missing = ".csv file but no .tflite file"
@@ -429,30 +432,41 @@ def get_installed_models():
     if not models:
         print(f"No classifiers found in directory '{CLASSIFIER_DIRECTORY}'; "
               "follow instructions in "
-              f"'{os.path.join(CLASSIFIER_DIRECTORY,'README.md')}'"
+              f"'{os.path.join(CLASSIFIER_DIRECTORY, 'README.md')}'"
               " to install them.", file=sys.stderr)
         sys.exit(1)
     return models
 
+
 def identify_species(classifier, filename):
+    """
+    Prints results (probability, taxon id, taxonomic rank, name) ordered by taxonomic rank from kingdom down to species.
+    Returns a dictionary object formatted for later JSON encoding.
+    """
     result = classifier.classify_image(filename)
     if result:
-        # Print list of tuples (probability, taxon id, taxonomic rank, name)
-        # ordered by taxonomic rank from kingdom down to species.
+        entries = {}
         for entry in result:
-            if len(entry) == 2: # labels only
+            if len(entry) == 2:  # labels only
                 print(f'{100 * entry[0]:5.1f}% {entry[1]}')
+                entries[entry[1]] = entry[0]
                 continue
             print(f'{100 * entry[0]:5.1f}% {entry[2]:11s} {entry[3]}')
+            entries[entry[2]] = {
+                "taxon": str(entry[3]),
+                "taxon_id": entry[1],
+                "probability": entry[0]
+            }
+        return entries
 
-# command-line parsing
 
 models = get_installed_models()
 
+
 def model_parameter_check(arg):
     if not arg in models:
-        msg = f"Model '{arg}' not available. Available "\
-              f"model{'' if len(models)==1 else 's'}:"
+        msg = f"Model '{arg}' not available. Available " \
+              f"model{'' if len(models) == 1 else 's'}:"
         prefix = ' '
         for m in models:
             msg += f"{prefix}'{m}'"
@@ -461,20 +475,21 @@ def model_parameter_check(arg):
         raise argparse.ArgumentTypeError(msg)
     return arg
 
+
 def result_size_check(arg):
     if arg.isdigit() and int(arg) > 0 and int(arg) <= 100:
         return int(arg)
     raise argparse.ArgumentTypeError(f"'{arg}' is not a number "
                                      "between 1 and 100.")
 
+
 def file_directory_check(arg):
     if os.path.isdir(arg) or os.path.isfile(arg):
         return arg
     raise argparse.ArgumentTypeError(f"'{arg}' is not a file or directory.")
 
-#
+
 # Identify species for picture files and directories given as command line args
-#
 
 if __name__ == '__main__':
     import argparse
@@ -483,7 +498,7 @@ if __name__ == '__main__':
     sys.stdout = open(sys.stdout.fileno(), mode='w',
                       encoding='utf8', buffering=1)
 
-    preferred = 'Seek' # default if this model is available
+    preferred = 'Seek'  # default if this model is available
 
     parser = argparse.ArgumentParser()
     if len(models) == 1 or preferred in models:
@@ -491,7 +506,7 @@ if __name__ == '__main__':
         parser.add_argument("-m", "--model", type=model_parameter_check,
                             default=default_model,
                             help="Model to load to identify lifeforms.")
-    else: # no default for classification model
+    else:  # no default for classification model
         parser.add_argument("-m", "--model", type=model_parameter_check,
                             required=True,
                             help="Model to load to identify lifeforms.")
@@ -499,13 +514,15 @@ if __name__ == '__main__':
                         help='Show all common names and not just one.')
     parser.add_argument('-l', '--label_probabilities_only', action="store_true",
                         help='Compute and display only label probabilities, '
-                        'do not propagate probabilities across the hierachy.')
+                             'do not propagate probabilities across the hierachy.')
     parser.add_argument('-s', '--scientific_names_only', action="store_true",
                         help='Only use scientific names, do not load common '
-                        'names.')
+                             'names.')
     parser.add_argument('-r', '--result_size', type=result_size_check,
                         default=result_sz, help='Number of labels and their '
-                        'probabilities to report in results.')
+                                                'probabilities to report in results.')
+    parser.add_argument('-o', '--output-file', metavar='file/directory',
+                        type=str, help='Output results to a JSON file.')
     parser.add_argument('files_dirs', metavar='file/directory',
                         type=file_directory_check, nargs='+',
                         help='Image files or directories with images.')
@@ -522,11 +539,22 @@ if __name__ == '__main__':
 
     # process photos
 
+    output = {}
     for arg in args.files_dirs:
         if os.path.isfile(arg):
-            identify_species(classifier, arg)
+            output[arg] = identify_species(classifier, arg)
         elif os.path.isdir(arg):
             for file in os.listdir(arg):
                 ext = os.path.splitext(file)[1].lower()
-                if ext in ['.jpg', '.jepg', '.png']:
-                    identify_species(classifier, os.path.join(arg, file))
+                if ext in ['.jpg', '.jpeg', '.png']:
+                    output[file] = identify_species(classifier, os.path.join(arg, file))
+
+    # write JSON object to file
+
+    if args.output_file:
+        output_file = args.output_file
+        if not output_file.endswith('.json'):
+            output_file += '.json'
+        with open(output_file, 'w') as f:
+            json.dump(output, f, indent=4)
+            f.close()
