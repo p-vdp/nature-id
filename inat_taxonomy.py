@@ -203,8 +203,8 @@ def annotate_common_names(id2taxon, all_common_names = False):
             # annotate the taxa with common names
             total_names = loaded_names = 0
             for fname in perfect_match + other_matches:
-                print(f"Reading common names from '{INAT_TAXONOMY}' "
-                      f"member '{fname}'...")
+                # print(f"Reading common names from '{INAT_TAXONOMY}' "
+                #       f"member '{fname}'...")
                 with zf.open(fname, 'r') as zfile:
                     with io.TextIOWrapper(zfile, encoding='utf-8') as csvf:
                         reader = csv.DictReader(csvf)

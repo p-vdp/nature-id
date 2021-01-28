@@ -131,10 +131,10 @@ class Taxonomy:
                     self.write_taxonomic_tree(filename.replace('labelmap',
                                                                'taxonomy'))
         else:
-            print(f"Read taxonomy from '{filename}' in "
-                  f"{time.time() - start_time:.1f} secs: "
-                  f"{len(self.id2taxon) - 1:,} taxa including "
-                  f"{len(self.idx2label):,} leaf taxa.")
+            # print(f"Read taxonomy from '{filename}' in "
+            #       f"{time.time() - start_time:.1f} secs: "
+            #       f"{len(self.id2taxon) - 1:,} taxa including "
+            #       f"{len(self.idx2label):,} leaf taxa.")
 
         if not scientific_names_only and self.taxonomy_available():
             inat_taxonomy.annotate_common_names(self.id2taxon, all_common_names)
@@ -365,7 +365,7 @@ class OfflineClassifier:
         output_data = self.mInterpreter.get_tensor(self.mOutput_details[0]
                                                    ['index'])
         path = self.mTaxonomy.prediction(output_data[0])
-        print()
+        # print()
         print(f"Classification of '{image_filename}' took "
               f"{time.time() - start_time:.1f} secs.")
         return path
