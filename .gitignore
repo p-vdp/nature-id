@@ -1,9 +1,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-*.csv
-*.tflite
-*.zip
 venv*
 *.json
 plant_images*
