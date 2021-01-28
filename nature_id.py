@@ -3,7 +3,7 @@
 import numpy as np
 from PIL import Image, ImageOps
 import csv, sys, os, time
-import inat_taxonomy
+from . import inat_taxonomy
 import json
 
 try:
@@ -445,10 +445,10 @@ def identify_species(classifier, filename):
         entries = {}
         for entry in result:
             if len(entry) == 2:  # labels only
-                print(f'{100 * entry[0]:5.1f}% {entry[1]}')
+                # print(f'{100 * entry[0]:5.1f}% {entry[1]}')
                 entries[entry[1]] = entry[0]
                 continue
-            print(f'{100 * entry[0]:5.1f}% {entry[2]:11s} {entry[3]}')
+            # print(f'{100 * entry[0]:5.1f}% {entry[2]:11s} {entry[3]}')
             entries[entry[2]] = {
                 "taxon": str(entry[3]),
                 "taxon_id": entry[1],

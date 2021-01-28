@@ -1,5 +1,5 @@
 import csv, sys, os, time, locale, zipfile, io
-import inat_api
+from . import inat_api
 
 # The directory where this Python script is located.
 INSTALL_DIR = os.path.dirname(sys.argv[0])
