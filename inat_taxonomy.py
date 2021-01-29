@@ -1,8 +1,10 @@
 import csv, sys, os, time, locale, zipfile, io
+import sysconfig
 from . import inat_api
 
 # The directory where this Python script is located.
-INSTALL_DIR = os.path.dirname(sys.argv[0])
+
+INSTALL_DIR = sysconfig.get_paths()["purelib"] + '/nature_id'
 if os.path.islink(sys.argv[0]):
     INSTALL_DIR = os.path.join(INSTALL_DIR,
                                os.path.dirname(os.readlink(sys.argv[0])))
