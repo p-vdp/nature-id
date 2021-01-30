@@ -49,8 +49,8 @@ class Throttle:
             self.api_count += 1
             if self.api_count > self.API_MAX_CALLS:
                 sleep_delay = self.API_INTERVAL - (tim - self.api_time)
-                print('Throttling API calls, sleeping for %.1f seconds.' %
-                      sleep_delay)
+                # print('Throttling API calls, sleeping for %.1f seconds.' %
+                #       sleep_delay)
                 time.sleep(sleep_delay)
                 self.start_sequence()
 

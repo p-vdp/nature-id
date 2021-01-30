@@ -98,7 +98,7 @@ def load_inat_taxonomy():
     if gName2Taxa and gId2Taxon:
         return True # already loaded
 
-    print('Loading iNaturalist taxonomy...')
+    # print('Loading iNaturalist taxonomy...')
     start_time = time.time()
     gName2Taxa = {}
     gId2Taxon = {}
@@ -123,8 +123,8 @@ def load_inat_taxonomy():
                                 gName2RankLevel[rank] = rank_level
                                 if not rank_level in gRankLevel2Name:
                                     gRankLevel2Name[rank_level] = rank
-                                print(f"Please add rank '{rank}' to gName2Rank"
-                                      f"Level, numeric value {rank_level}.")
+                                # print(f"Please add rank '{rank}' to gName2Rank"
+                                #       f"Level, numeric value {rank_level}.")
                             else:
                                 gName2RankLevel[rank] = -1
                         rank_level = gName2RankLevel[rank]
@@ -135,15 +135,15 @@ def load_inat_taxonomy():
                             gName2Taxa[name] = [inat_taxon]
                         assert not id in gId2Taxon
                         gId2Taxon[id] = inat_taxon
-                        if len(gId2Taxon) % 10000 == 0:
-                            print(f' {len(gId2Taxon):,} ' if len(gId2Taxon) %
-                                  100000 == 0 else '.', end='')
-                            sys.stdout.flush()
+                        # if len(gId2Taxon) % 10000 == 0:
+                        #     print(f' {len(gId2Taxon):,} ' if len(gId2Taxon) %
+                        #           100000 == 0 else '.', end='')
+                        #     sys.stdout.flush()
 
         assert ROOT_TAXON_ID in gId2Taxon
-        print(f' {len(gId2Taxon):,}.')
-        print(f'Loaded iNaturalist taxonomy of {len(gId2Taxon):,} taxa '
-              f'in {time.time()-start_time:.1f} secs.')
+        # print(f' {len(gId2Taxon):,}.')
+        # print(f'Loaded iNaturalist taxonomy of {len(gId2Taxon):,} taxa '
+        #       f'in {time.time()-start_time:.1f} secs.')
         return True
 
     except Exception as e:
@@ -223,9 +223,9 @@ def annotate_common_names(id2taxon, all_common_names = False):
                                 else:
                                     id2taxon[id].common_name += '; ' + cname
 
-        print(f'Read {total_names:,} common names in '
-              f'{time.time()-start_time:.1f} secs, loaded {loaded_names:,} '
-              f'in language "{language}" for {len(id2taxon)-1:,} taxa.')
+        # print(f'Read {total_names:,} common names in '
+        #       f'{time.time()-start_time:.1f} secs, loaded {loaded_names:,} '
+        #       f'in language "{language}" for {len(id2taxon)-1:,} taxa.')
 
     except Exception as e:
         print(f"Cannot load common names from archive '{INAT_TAXONOMY}':"
@@ -249,7 +249,7 @@ def lookup_id(name, desired_ranks = ['species', 'subspecies']):
         if len(taxa) > 1:
             species = None
             subspecies = None
-            print(f"Warning: multiple taxa named '{name}':", end='')
+            # print(f"Warning: multiple taxa named '{name}':", end='')
             prefix = ' '
             taxon = None
             for t in taxa:
@@ -261,7 +261,7 @@ def lookup_id(name, desired_ranks = ['species', 'subspecies']):
             if not taxon:
                 taxon = taxa[0]
             rank = get_rank_name(taxon[IDX_RANK_LEVEL])
-            print(f"; choosing {rank}.")
+            # print(f"; choosing {rank}.")
         else:
             taxon = taxa[0]
         ancestors = []

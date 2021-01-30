@@ -122,8 +122,8 @@ class Taxonomy:
         if not self.taxonomy_available():
             # We parsed a label file; unless told otherwise, we use these
             # labels to build a taxonomic tree.
-            print(f"Read {len(self.idx2label):,} labels from '{filename}' "
-                  f"in {time.time() - start_time:.1f} secs.")
+            # print(f"Read {len(self.idx2label):,} labels from '{filename}' "
+            #       f"in {time.time() - start_time:.1f} secs.")
 
             if not label_probabilities_only:
                 self.compute_taxonomic_tree()
@@ -131,6 +131,7 @@ class Taxonomy:
                     self.write_taxonomic_tree(filename.replace('labelmap',
                                                                'taxonomy'))
         else:
+            pass
             # print(f"Read taxonomy from '{filename}' in "
             #       f"{time.time() - start_time:.1f} secs: "
             #       f"{len(self.id2taxon) - 1:,} taxa including "
@@ -165,7 +166,7 @@ class Taxonomy:
                                  'leaf_class_id', 'name'])
                 for child in self.root.children:
                     self.write_row(writer, child, '')
-            print(f"Taxonomy written to file '{filename}'.")
+            # print(f"Taxonomy written to file '{filename}'.")
         except Exception as e:
             print(f"Failure writing taxonomy to file '{filename}':", str(e))
             try:
@@ -193,8 +194,8 @@ class Taxonomy:
         for idx, name in self.idx2label.items():
             inat_taxa = inat_taxonomy.lookup_id(name)
             if not inat_taxa:
-                print(f"Info: Taxon for label '{name}' not found, "
-                      "inserting as pseudo-kingdom.")
+                # print(f"Info: Taxon for label '{name}' not found, "
+                #       "inserting as pseudo-kingdom.")
                 new_id -= 1
                 taxon_id = new_id
                 self.id2taxon[taxon_id] = taxon = Taxon(taxon_id)
@@ -205,10 +206,10 @@ class Taxonomy:
                 continue
 
             inat_taxon, ancestors = inat_taxa
-            if name != inat_taxon[IDX_NAME]:
-                print(f"Info: Taxon '{name}' changed to "
-                      f"'{inat_taxon[IDX_NAME]}', iNat taxa "
-                      f"id {inat_taxon[IDX_ID]}.")
+            # if name != inat_taxon[IDX_NAME]:
+            #     print(f"Info: Taxon '{name}' changed to "
+            #           f"'{inat_taxon[IDX_NAME]}', iNat taxa "
+            #           f"id {inat_taxon[IDX_ID]}.")
 
             # ancestor taxa
             prev_ancestor = self.root
@@ -236,9 +237,9 @@ class Taxonomy:
                 prev_ancestor.add_child(taxon)
             taxon.leaf_class_ids.append(idx)
 
-        print("Computed taxonomic tree from labels in "
-              f"{time.time() - start_time:.1f} secs: {len(self.id2taxon) - 1:,} "
-              f"taxa including {len(self.idx2label):,} leaf taxa.")
+        # print("Computed taxonomic tree from labels in "
+        #       f"{time.time() - start_time:.1f} secs: {len(self.id2taxon) - 1:,} "
+        #       f"taxa including {len(self.idx2label):,} leaf taxa.")
 
     def assign_scores(self, taxon, probabilities):
         """Propagate probabilities to taxon and all below"""
@@ -294,7 +295,11 @@ class Taxonomy:
 
 class OfflineClassifier:
     """Offline image classification."""
-    def __init__(self, filenames):
+    def __init__(self, model_choice):
+        # Get models and choose based on type, options are 'birds', 'insects', 'plants'
+        models = get_installed_models()
+        filenames = models[model_choice]
+
         # Load TFLite model and allocate tensors.
         self.mInterpreter = tflite.Interpreter(model_path=filenames[0])
         self.mInterpreter.allocate_tensors()
@@ -366,8 +371,8 @@ class OfflineClassifier:
                                                    ['index'])
         path = self.mTaxonomy.prediction(output_data[0])
         # print()
-        print(f"Classification of '{image_filename}' took "
-              f"{time.time() - start_time:.1f} secs.")
+        # print(f"Classification of '{image_filename}' took "
+        #       f"{time.time() - start_time:.1f} secs.")
         return path
 
 
